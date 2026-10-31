@@ -27,7 +27,7 @@ theme_override_constants/separation = 32
 [node name="Title" type="Label" parent="Center/Menu" unique_id=89848327]
 layout_mode = 2
 theme_override_font_sizes/font_size = 72
-text = "Моя Игра"
+text = "AIGame"
 horizontal_alignment = 1
 
 [node name="StartButton" type="Button" parent="Center/Menu" unique_id=679640005]

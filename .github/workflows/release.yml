@@ -1,0 +1,121 @@
+name: Release
+
+# Собирает Windows-сборку и публикует её в Releases.
+# Запуск: пуш тега вида v1.2.3 (или вручную через Actions -> Release -> Run workflow).
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  GODOT_VERSION: 4.7.2-stable
+  # Каталог шаблонов должен совпадать с тем, куда Godot их ставит: <версия>.stable
+  TEMPLATES_VERSION: 4.7.2.stable
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Godot and export templates
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.temp }}/godot
+            ${{ runner.temp }}/templates
+          key: godot-${{ env.GODOT_VERSION }}
+
+      - name: Download Godot editor and export templates
+        if: steps.cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $v = $env:GODOT_VERSION
+          $base = "https://github.com/godotengine/godot/releases/download/$v"
+
+          New-Item -ItemType Directory -Force -Path "$env:RUNNER_TEMP\godot", "$env:RUNNER_TEMP\templates" | Out-Null
+
+          Write-Host "Downloading Godot editor $v ..."
+          Invoke-WebRequest "$base/Godot_v${v}_win64.exe.zip" -OutFile "$env:RUNNER_TEMP\godot.zip"
+          Expand-Archive "$env:RUNNER_TEMP\godot.zip" -DestinationPath "$env:RUNNER_TEMP\godot" -Force
+
+          Write-Host "Downloading export templates $v ..."
+          Invoke-WebRequest "$base/Godot_v${v}_export_templates.tpz" -OutFile "$env:RUNNER_TEMP\templates.zip"
+          Expand-Archive "$env:RUNNER_TEMP\templates.zip" -DestinationPath "$env:RUNNER_TEMP\templates" -Force
+
+      - name: Install export templates
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $target = "$env:APPDATA\Godot\export_templates\$env:TEMPLATES_VERSION"
+          New-Item -ItemType Directory -Force -Path $target | Out-Null
+          Copy-Item "$env:RUNNER_TEMP\templates\templates\*" -Destination $target -Recurse -Force
+          $exe = Get-ChildItem $target -Filter "windows_release_x86_64.exe" -ErrorAction SilentlyContinue
+          if (-not $exe) { throw "windows_release_x86_64.exe не найден в $target" }
+          Write-Host "Шаблоны установлены: $($exe.FullName)"
+
+      - name: Export Windows build
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $godot = Get-ChildItem "$env:RUNNER_TEMP\godot\*.exe" |
+            Where-Object { $_.Name -notlike '*console*' } |
+            Select-Object -First 1
+          if (-not $godot) { throw "Godot executable not found" }
+          Write-Host "Godot: $($godot.FullName)"
+
+          # Тот же трюк, что и в tools/export_release.ps1: автозагрузка MCPRuntimeProbe
+          # ссылается на addons/godot_mcp, который исключён из сборки, поэтому без
+          # этой правки собранная игра падала бы на старте.
+          $proj = Join-Path $env:GITHUB_WORKSPACE 'project.godot'
+          $content = Get-Content $proj -Raw
+          ($content -replace '(?m)^MCPRuntimeProbe=.*\r?\n', '') | Set-Content $proj -NoNewline
+
+          Write-Host "Importing project ..."
+          & $godot.FullName --headless --path $env:GITHUB_WORKSPACE --import
+          if ($LASTEXITCODE -ne 0) { throw "import failed (exit $LASTEXITCODE)" }
+
+          Write-Host "Exporting preset 'Windows Desktop' ..."
+          & $godot.FullName --headless --path $env:GITHUB_WORKSPACE --export-release "Windows Desktop" "build/AIGame.exe"
+          if ($LASTEXITCODE -ne 0) { throw "export failed (exit $LASTEXITCODE)" }
+
+          $out = Join-Path $env:GITHUB_WORKSPACE 'build\AIGame.exe'
+          if (-not (Test-Path $out)) { throw "Сборка не создана: $out" }
+          $mb = [math]::Round((Get-Item $out).Length / 1MB, 1)
+          Write-Host "Build OK: $out ($mb MB)"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AIGame-windows-x64
+          path: build/AIGame.exe
+          if-no-files-found: error
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $exe = "build/AIGame.exe"
+
+          gh release view $tag --json tagName *> $null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Релиз $tag уже существует — обновляю ассет"
+            gh release upload $tag $exe --clobber
+          } else {
+            gh release create $tag $exe `
+              --title "AIGame $tag" `
+              --generate-notes
+          }
+          if ($LASTEXITCODE -ne 0) { throw "publish failed (exit $LASTEXITCODE)" }

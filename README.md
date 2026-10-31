@@ -1,6 +1,7 @@
 # AIGame
 
-[![Релиз v1.0.0](https://img.shields.io/badge/release-v1.0.0-2ea44f?style=flat-square&logo=github)](https://github.com/JERCYQUE/ai-game/releases/latest)
+[![Релиз](https://img.shields.io/github/v/release/JERCYQUE/ai-game?style=flat-square&logo=github&label=release&color=2ea44f)](https://github.com/JERCYQUE/ai-game/releases/latest)
+![Сборка](https://img.shields.io/github/actions/workflow/status/JERCYQUE/ai-game/release.yml?style=flat-square&logo=githubactions&logoColor=white&label=build)
 ![Godot](https://img.shields.io/badge/Godot-4.7-478cbf?style=flat-square&logo=godotengine&logoColor=white)
 ![Платформа](https://img.shields.io/badge/platform-Windows-0078d4?style=flat-square&logo=windows&logoColor=white)
 ![Создано ИИ](https://img.shields.io/badge/made%20by-AI%20agent-8250df?style=flat-square)
@@ -43,7 +44,7 @@
 
 Готовая сборка — в разделе [**Releases**](https://github.com/JERCYQUE/ai-game/releases/latest):
 
-**[⬇ AIGame.exe (104 МБ)](https://github.com/JERCYQUE/ai-game/releases/download/v1.0.0/AIGame.exe)**
+**[⬇ AIGame.exe (104 МБ)](https://github.com/JERCYQUE/ai-game/releases/latest/download/AIGame.exe)**
 
 Windows 10/11, x64. Установка не требуется: скачайте файл и запустите. Бинарник собран под Direct3D 12 (`Forward+`).
 
@@ -54,6 +55,18 @@ Windows 10/11, x64. Установка не требуется: скачайте
 3. Откройте папку проекта в Godot (`project.godot`) и нажмите **F5**.
 
 Сборка релиза — скриптом `tools/export_release.ps1` (нужны шаблоны экспорта Godot для Windows). Результат кладётся в `build/`, которая не попадает в git.
+
+## Автоматическая сборка
+
+Релизы собирает GitHub Actions (`.github/workflows/release.yml`). При пуше тега вида `v*` раннер скачивает Godot 4.7.2 и шаблоны экспорта для Windows, импортирует проект, собирает `.exe` и публикует его в Releases с автоматически сгенерированным описанием.
+
+И CI, и локальный скрипт перед экспортом убирают из `project.godot` автозагрузку `MCPRuntimeProbe`: её скрипт лежит в `addons/godot_mcp`, который исключён из сборки, и без этой правки собранная игра падала бы на старте.
+
+Чтобы выпустить новую версию:
+
+```bash
+git tag v1.0.2 && git push origin v1.0.2
+```
 
 ## Структура проекта
 
@@ -69,7 +82,8 @@ ai-game/
 ├── spark_particles.tscn/.gd # частицы искр
 ├── sounds/                  # 4 звука: монета, победа, поражение, поимка
 ├── docs/screenshots/        # скриншоты для этого README
-├── tools/export_release.ps1 # скрипт релизной сборки
+├── tools/export_release.ps1 # локальная релизная сборка
+├── .github/workflows/release.yml # CI: сборка exe и публикация релиза
 └── addons/godot_mcp/        # MCP-мост «редактор Godot ↔ ИИ-агент» (MIT)
 ```
 
