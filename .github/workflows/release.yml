@@ -1,12 +1,15 @@
 name: Release
 
-# Собирает Windows-сборку и публикует её в Releases.
-# Запуск: пуш тега вида v1.2.3 (или вручную через Actions -> Release -> Run workflow).
+# Собирает Windows-сборку: на PR — только проверка сборки, на теге — ещё и публикация релиза.
+# Запуск: пуш тега вида v1.2.3, пул-реквест в main (или вручную через Actions -> Release -> Run workflow).
 
 on:
   push:
     tags:
       - 'v*'
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
