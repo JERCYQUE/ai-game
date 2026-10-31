@@ -80,18 +80,27 @@ jobs:
           $content = Get-Content $proj -Raw
           ($content -replace '(?m)^MCPRuntimeProbe=.*\r?\n', '') | Set-Content $proj -NoNewline
 
+          New-Item -ItemType Directory -Force -Path (Join-Path $env:GITHUB_WORKSPACE 'build') | Out-Null
+
+          # Godot собран как GUI-приложение: вызов через '&' не дожидается его и не
+          # выставляет $LASTEXITCODE. Запускаем через Start-Process -Wait и смотрим ExitCode.
+          function Invoke-Godot {
+            param([string[]]$GodotArgs)
+            $p = Start-Process -FilePath $godot.FullName -ArgumentList $GodotArgs -PassThru -Wait -NoNewWindow
+            if ($p.ExitCode -ne 0) { throw "Godot завершился с кодом $($p.ExitCode): $($GodotArgs -join ' ')" }
+          }
+
           Write-Host "Importing project ..."
-          & $godot.FullName --headless --path $env:GITHUB_WORKSPACE --import
-          if ($LASTEXITCODE -ne 0) { throw "import failed (exit $LASTEXITCODE)" }
+          Invoke-Godot @('--headless', '--path', "`"$env:GITHUB_WORKSPACE`"", '--import')
 
           Write-Host "Exporting preset 'Windows Desktop' ..."
-          & $godot.FullName --headless --path $env:GITHUB_WORKSPACE --export-release "Windows Desktop" "build/AIGame.exe"
-          if ($LASTEXITCODE -ne 0) { throw "export failed (exit $LASTEXITCODE)" }
+          Invoke-Godot @('--headless', '--path', "`"$env:GITHUB_WORKSPACE`"", '--export-release', '"Windows Desktop"', '"build/AIGame.exe"')
 
           $out = Join-Path $env:GITHUB_WORKSPACE 'build\AIGame.exe'
           if (-not (Test-Path $out)) { throw "Сборка не создана: $out" }
           $mb = [math]::Round((Get-Item $out).Length / 1MB, 1)
-          Write-Host "Build OK: $out ($mb MB)"
+          $hash = (Get-FileHash $out -Algorithm SHA256).Hash
+          Write-Host "Build OK: $out ($mb MB, sha256 $hash)"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
