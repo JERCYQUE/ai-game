@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://djhknjxvhue6y"]
+
+[ext_resource type="Texture2D" uid="uid://dbe0vxt5nch3w" path="res://icon.svg" id="1_1v13j"]
+[ext_resource type="Script" uid="uid://d1543n4q1ad2b" path="res://spark_particles.gd" id="2_o3dua"]
+
+[node name="spark_particles" type="CPUParticles2D" unique_id=2058116401]
+emitting = false
+amount = 18
+texture = ExtResource("1_1v13j")
+lifetime = 1.2
+one_shot = true
+explosiveness = 1.0
+spread = 180.0
+gravity = Vector2(0, 220)
+initial_velocity_min = 90.0
+initial_velocity_max = 260.0
+scale_amount_min = 0.08
+scale_amount_max = 0.16
+color = Color(1, 0.85, 0.2, 1)
+script = ExtResource("2_o3dua")

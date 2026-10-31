@@ -1,0 +1,14 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Exported builds (build/AIGame.exe is ~100 MB — never commit binaries)
+build/
+export/
+*.pck
+*.zip
+
+# Editor / OS noise
+*.tmp
+.DS_Store
+Thumbs.db

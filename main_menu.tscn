@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://bwlyou8tdykd1"]
+
+[ext_resource type="Script" uid="uid://mum5qrwru8kq" path="res://main_menu.gd" id="1_06t4h"]
+
+[node name="main_menu" type="Control" unique_id=1617463857]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_06t4h")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1065975944]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.1, 0.11, 0.14, 1)
+
+[node name="Center" type="CenterContainer" parent="." unique_id=401096171]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Menu" type="VBoxContainer" parent="Center" unique_id=1746264697]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="Title" type="Label" parent="Center/Menu" unique_id=89848327]
+layout_mode = 2
+theme_override_font_sizes/font_size = 72
+text = "Моя Игра"
+horizontal_alignment = 1
+
+[node name="StartButton" type="Button" parent="Center/Menu" unique_id=679640005]
+custom_minimum_size = Vector2(260, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 28
+text = "Начать"
