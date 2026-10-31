@@ -5,6 +5,7 @@
 ![Godot](https://img.shields.io/badge/Godot-4.7-478cbf?style=flat-square&logo=godotengine&logoColor=white)
 ![Платформа](https://img.shields.io/badge/platform-Windows-0078d4?style=flat-square&logo=windows&logoColor=white)
 ![Создано ИИ](https://img.shields.io/badge/made%20by-AI%20agent-8250df?style=flat-square)
+![Лицензия](https://img.shields.io/github/license/JERCYQUE/ai-game?style=flat-square&label=license&color=blue)
 
 **2D-игра, полностью созданная ИИ-агентом** — от первой сцены до релизной сборки.
 Короткая аркада: соберите три монеты за 15 секунд, не попавшись патрулирующему врагу.
@@ -72,6 +73,7 @@ git tag v1.0.2 && git push origin v1.0.2
 
 ```
 ai-game/
+├── LICENSE                  # лицензия MIT
 ├── project.godot            # настройки проекта, ввод, автозагрузки
 ├── main_menu.tscn/.gd       # главное меню, переход в игру
 ├── main.tscn/.gd            # игровая сцена: HUD, счёт, таймер, победа/поражение
@@ -104,3 +106,12 @@ ai-game/
 | Аудио | WAV через `AudioStreamPlayer` |
 | Платформа | Windows 10/11 x64 |
 | Разработка | DeepSeek Harness + Godot MCP |
+
+## Лицензия
+
+Код проекта распространяется под лицензией **MIT** — полный текст в файле [LICENSE](LICENSE). Вы можете свободно использовать, изменять и распространять его, сохраняя уведомление об авторских правах.
+
+Игра создана на [Godot Engine](https://godotengine.org), который также распространяется под лицензией MIT. Плагин `addons/godot_mcp` — сторонний проект под MIT, его текст лежит в `addons/godot_mcp/LICENSE`.
+
+Ассеты (сцены, скрипты, звуки, изображения) созданы ИИ-агентом специально для этого проекта и покрываются той же лицензией MIT.
+
